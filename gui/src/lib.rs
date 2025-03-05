@@ -1,16 +1,19 @@
-use iced::{Application, Element, Settings, Command};
+use iced::{Application, Command, Element, Settings};
+use iced::widget::{text_input};
 use rusty_core::language::LanguageEngine;
+use std::sync::Arc;
 
 pub struct Gui {
     content: String,
-    engine: Box<dyn LanguageEngine>
+    engine: Arc<Box<dyn LanguageEngine>>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     TextChanged(String),
-    CompetitionsGot(Vec<String>)
+    CompletionsReceived(Vec<String>),
 }
+
 impl Application for Gui {
     type Executor = iced::executor::Default;
     type Message = Message;
@@ -21,41 +24,39 @@ impl Application for Gui {
         (
             Gui {
                 content: "Hello, IDE!".to_string(),
-                engine: rusty_core::language::MockEngine::new()
+                engine: Arc::new(rusty_core::language::MockEngine::new()),
             },
             Command::none(),
         )
     }
 
     fn title(&self) -> String {
-        "RustyIDE".to_string()
+        "Rusty IDE".to_string()
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::TextChanged(text) => {
                 self.content = text.clone();
-
                 let text_clone = text.clone();
-                let engine = self.engine.as_ref();
+                let engine = Arc::clone(&self.engine);
                 Command::perform(
                     async move {
                         engine.get_completions(&text_clone, 0).await
                     },
-                    |completions| Message::CompetitionsGot(completions)
+                    Message::CompletionsReceived
                 )
             }
-            Message::CompetitionsGot(vector) => {
+            Message::CompletionsReceived(completions) => {
+                println!("Completions: {:?}", completions);
                 Command::none()
             }
         }
     }
 
     fn view(&self) -> Element<Self::Message> {
-        iced::widget::text_input("Input", &self.content)
-            .on_input(|text| {
-                Message::TextChanged(text)
-            })
+        text_input("Enter code...", &self.content)
+            .on_input(Message::TextChanged)
             .into()
     }
 }
