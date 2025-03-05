@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 iced = { version = "0.12.1", features = ["tokio"] }
-core = { path = "../core" }
+rusty-core = { path = "../rusty-core" }

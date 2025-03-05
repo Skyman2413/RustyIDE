@@ -7,4 +7,4 @@ edition = "2024"
 gui = { path = "gui" }
 
 [workspace]
-members = ["gui", "core"]
+members = ["gui", "rusty-core"]
