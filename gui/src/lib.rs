@@ -1,13 +1,15 @@
-use iced::{Application, Command, Element, Settings};
-use core::language::LanguageEngine;
+use iced::{Application, Element, Settings, Command};
+use rusty_core::language::LanguageEngine;
 
 pub struct Gui {
     content: String,
+    engine: Box<dyn LanguageEngine>
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    // Пока пусто, добавим позже
+    TextChanged(String),
+    CompetitionsGot(Vec<String>)
 }
 impl Application for Gui {
     type Executor = iced::executor::Default;
@@ -19,6 +21,7 @@ impl Application for Gui {
         (
             Gui {
                 content: "Hello, IDE!".to_string(),
+                engine: rusty_core::language::MockEngine::new()
             },
             Command::none(),
         )
@@ -28,12 +31,27 @@ impl Application for Gui {
         "RustyIDE".to_string()
     }
 
-    fn update(&mut self, _message: Self::Message) -> Command<Self::Message> {
-        Command::none()
+    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        match message {
+            Message::TextChanged(text) => {
+                self.content = text.clone();
+
+                Command::perform(self.engine.get_completions(&text, 0), |completions| {
+                    Message::CompetitionsGot(completions)
+                })
+            }
+            Message::CompetitionsGot(vector) => {
+                Command::none()
+            }
+        }
     }
 
     fn view(&self) -> Element<Self::Message> {
-        iced::widget::text(&self.content).into()
+        iced::widget::text_input("Input", &self.content)
+            .on_input(|text| {
+                Message::TextChanged(text)
+            })
+            .into()
     }
 }
 
