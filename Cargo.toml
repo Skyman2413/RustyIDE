@@ -1,0 +1,10 @@
+[package]
+name = "RustyIDE"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+gui = { path = "gui" }
+
+[workspace]
+members = ["gui", "core"]

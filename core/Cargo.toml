@@ -1,0 +1,10 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+tower-lsp = "0.20"
+serde = { version = "1.0.218", features = ["derive"] }
+async-trait = "0.1.86"
