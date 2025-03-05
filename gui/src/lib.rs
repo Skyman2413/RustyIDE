@@ -36,9 +36,14 @@ impl Application for Gui {
             Message::TextChanged(text) => {
                 self.content = text.clone();
 
-                Command::perform(self.engine.get_completions(&text, 0), |completions| {
-                    Message::CompetitionsGot(completions)
-                })
+                let text_clone = text.clone();
+                let engine = self.engine.as_ref();
+                Command::perform(
+                    async move {
+                        engine.get_completions(&text_clone, 0).await
+                    },
+                    |completions| Message::CompetitionsGot(completions)
+                )
             }
             Message::CompetitionsGot(vector) => {
                 Command::none()
